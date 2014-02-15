@@ -3,10 +3,18 @@ from PySide.QtGui import *
 import sys
 import git
 import ftplib
+import sqlite3
 
 class MainWindow(QWidget):
 	def __init__(self):
 		QWidget.__init__(self)
+
+		self.db_conn = sqlite3.connect('settings.db')
+		cur = self.db_conn.cursor()
+		try:
+			cur.execute('create table ftp_servers(id integer primary key autoincrement, address varchar(255), username varchar(255), password varchar(255));')
+		except sqlite3.OperationalError:
+			print 'table already exists'
 
 		grid_layout = QGridLayout()
 		self.setLayout(grid_layout)
@@ -44,15 +52,43 @@ class MainWindow(QWidget):
 		grid_layout.addWidget(self.password_edit, 2, 2, 1, 1)
 		grid_layout.addWidget(upload_btn, 3, 1, 1, 1)
 
+		ftp_credentials = self.getFtpCredentials()
+		if ftp_credentials:
+			self.address_edit.setText(ftp_credentials[1])
+			self.username_edit.setText(ftp_credentials[2])
+			self.password_edit.setText(ftp_credentials[3])
+
 	def printTextToConsole(self, text):
 		print text
 		original_text = self.console_box.toPlainText()
 		self.console_box.setText(original_text+text+'\n')
 
+	def getFtpCredentials(self):
+		cur = self.db_conn.cursor()
+		cur.execute('select * from ftp_servers')
+		server = cur.fetchone()
+		if server:
+			return server
+		else:
+			return None
+
+	def updateFtpCredentials(self, server_address, username, password):
+		cur = self.db_conn.cursor()
+		cur.execute('select * from ftp_servers where address="{0}"'.format(server_address))
+		rows = cur.fetchall()
+		if len(rows)>0:
+			sql = 'update ftp_servers set address="{0}", username="{1}", password="{2}" where address="{0}"'.format(server_address, username, password)
+			cur.execute(sql)
+		else:
+			sql = 'insert into ftp_servers(address, username, password) values("{0}", "{1}", "{2}")'.format(server_address, username, password)
+			cur.execute(sql)
+		self.db_conn.commit()
+
 	def uploadBtnClicked(self):
 		server_address = self.address_edit.text()
 		username = self.username_edit.text()
 		password = self.password_edit.text()
+		self.updateFtpCredentials(server_address, username, password)
 
 		ftp = ftplib.FTP()
 		try:
