@@ -6,15 +6,18 @@ import ftplib
 import sqlite3
 
 class MainWindow(QWidget):
-	def __init__(self):
-		QWidget.__init__(self)
-
+	def initDB(self):
 		self.db_conn = sqlite3.connect('settings.db')
 		cur = self.db_conn.cursor()
 		try:
 			cur.execute('create table ftp_servers(id integer primary key autoincrement, address varchar(255), username varchar(255), password varchar(255));')
 		except sqlite3.OperationalError:
 			print 'table already exists'
+
+	def __init__(self):
+		QWidget.__init__(self)
+
+		self.initDB()
 
 		grid_layout = QGridLayout()
 		self.setLayout(grid_layout)
@@ -26,6 +29,7 @@ class MainWindow(QWidget):
 
 		r = git.Repo('.')
 		c = r.head.commit
+		self.changed_files = c.stats.files.keys()
 		for f in c.stats.files.keys():
 			print f
 			changed_files_model.appendRow([QStandardItem(f)])
@@ -98,9 +102,18 @@ class MainWindow(QWidget):
 			self.printTextToConsole('Cannot connect to host')
 			return
 
-		self.printTextToConsole(ftp.login(username, password))
+		try:
+			login_status = ftp.login(username, password)
+			self.printTextToConsole(login_status)
+		except Exception, e:
+			print e
+			self.printTextToConsole('login failed')
 
-		print username, password
+		for filename in self.changed_files:
+			f = open(filename)
+			print ftp.storlines('STOR '+filename, f)
+			f.close()
+
 
 app = QApplication(sys.argv)
 w = MainWindow()
