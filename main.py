@@ -111,7 +111,7 @@ class MainWindow(QWidget):
 
 		for filename in self.changed_files:
 			f = open(filename)
-			print ftp.storlines('STOR '+filename, f)
+			self.printTextToConsole(ftp.storlines('STOR '+filename, f))
 			f.close()
 
 
