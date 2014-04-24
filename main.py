@@ -4,6 +4,7 @@ import sys
 import git
 import ftplib
 import sqlite3
+import threading
 
 class MainWindow(QWidget):
 	def initDB(self):
@@ -93,27 +94,49 @@ class MainWindow(QWidget):
 		username = self.username_edit.text()
 		password = self.password_edit.text()
 		self.updateFtpCredentials(server_address, username, password)
+		self.upload_thread = UploadThread(self)
+		self.upload_thread.updateConsole.connect(self.printTextToConsole)
+		self.upload_thread.start()
+
+
+class UploadThread(QThread):
+	updateConsole = Signal(str)
+
+	def __init__(self, window):
+		QThread.__init__(self)
+		self.window = window
+		print self.window
+
+	def run(self):
+		server_address = self.window.address_edit.text()
+		username = self.window.username_edit.text()
+		password = self.window.password_edit.text()
+		
 
 		ftp = ftplib.FTP()
 		try:
 			print ftp.connect(server_address)
 		except Exception, e:
 			print e
-			self.printTextToConsole('Cannot connect to host')
+			self.updateConsole.emit('Cannot connect to host')
+			#self.window.printTextToConsole('Cannot connect to host')
 			return
 
 		try:
 			login_status = ftp.login(username, password)
-			self.printTextToConsole(login_status)
+			self.updateConsole.emit(login_status)
+			#self.window.printTextToConsole(login_status)
 		except Exception, e:
 			print e
-			self.printTextToConsole('login failed')
+			self.updateConsole.emit('login failed')
+			#self.window.printTextToConsole('login failed')
 
-		for filename in self.changed_files:
+		for filename in self.window.changed_files:
 			f = open(filename)
-			self.printTextToConsole(ftp.storlines('STOR '+filename, f))
+			self.updateConsole.emit(ftp.storlines('STOR '+filename, f))
+			#self.window.printTextToConsole(ftp.storlines('STOR '+filename, f))
 			f.close()
-
+		print 'a'
 
 app = QApplication(sys.argv)
 w = MainWindow()
