@@ -42,6 +42,9 @@ class MainWindow(QWidget):
 		self.setLayout(grid_layout)
 
 		changed_files_table = QTableView()
+		self.changed_files_table = changed_files_table
+		changed_files_table.horizontalHeader().hide()
+		
 		grid_layout.addWidget(changed_files_table, 1, 0, 5, 3)
 		changed_files_table.setModel(self.changed_files_model)
 
@@ -100,6 +103,7 @@ class MainWindow(QWidget):
 		for f in c.stats.files.keys():
 			print f
 			self.changed_files_model.appendRow([QStandardItem(f)])
+		self.changed_files_table.setColumnWidth(0, self.changed_files_table.width())
 
 	def chooseRepositoryPathBtnClicked(self):
 		file_dlg = QFileDialog(self)
