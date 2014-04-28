@@ -28,7 +28,14 @@ class MainWindow(QWidget):
 		changed_files_model = QStandardItemModel()
 		changed_files_table.setModel(changed_files_model)
 
-		r = git.Repo('.')
+		# get changed files
+		try:
+			r = git.Repo('.')
+		except git.exc.InvalidGitRepositoryError:
+			msg_box = QMessageBox()
+			msg_box.setText("Current directory is not a valid git repository")
+			msg_box.exec_()
+			exit()
 		c = r.head.commit
 		self.changed_files = c.stats.files.keys()
 		for f in c.stats.files.keys():
