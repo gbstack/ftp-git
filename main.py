@@ -120,6 +120,11 @@ class MainWindow(QWidget):
 		print text
 		original_text = self.console_box.toPlainText()
 		self.console_box.setText(original_text+text+'\n')
+	def displayError(self, text):
+		msg_box = QMessageBox()
+		msg_box.setWindowTitle('Error')
+		msg_box.setText(text)
+		msg_box.exec_()
 
 	def getFtpCredentials(self):
 		cur = self.db_conn.cursor()
@@ -149,11 +154,13 @@ class MainWindow(QWidget):
 		self.updateFtpCredentials(server_address, username, password)
 		self.upload_thread = UploadThread(self)
 		self.upload_thread.updateConsole.connect(self.printTextToConsole)
+		self.upload_thread.updateConsoleError.connect(self.displayError)
 		self.upload_thread.start()
 
 
 class UploadThread(QThread):
 	updateConsole = Signal(str)
+	updateConsoleError = Signal(str)
 
 	def __init__(self, window):
 		QThread.__init__(self)
@@ -171,17 +178,19 @@ class UploadThread(QThread):
 			print ftp.connect(server_address)
 		except Exception, e:
 			print e
-			self.updateConsole.emit('Cannot connect to host')
+			self.updateConsoleError.emit('Cannot connect to host')
 			#self.window.printTextToConsole('Cannot connect to host')
 			return
 
 		try:
+			self.updateConsole.emit('Authenticating..')
 			login_status = ftp.login(username, password)
 			self.updateConsole.emit(login_status)
 			#self.window.printTextToConsole(login_status)
 		except Exception, e:
 			print e
-			self.updateConsole.emit('login failed')
+			self.updateConsoleError.emit('login failed')
+			return
 			#self.window.printTextToConsole('login failed')
 
 		for filename in self.window.changed_files:
