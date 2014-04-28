@@ -45,7 +45,7 @@ class MainWindow(QWidget):
 		self.changed_files_table = changed_files_table
 		changed_files_table.horizontalHeader().hide()
 		
-		grid_layout.addWidget(changed_files_table, 1, 0, 5, 3)
+		grid_layout.addWidget(changed_files_table, 1, 0, 6, 3)
 		changed_files_table.setModel(self.changed_files_model)
 
 		# ftp part UI
@@ -58,9 +58,12 @@ class MainWindow(QWidget):
 		upload_btn = QPushButton('Upload')
 		upload_btn.clicked.connect(self.uploadBtnClicked)
 
+		# log console
+		console_label = QLabel('Log')
+		grid_layout.addWidget(console_label, 5,3,1,1)
 		self.console_box = QTextEdit()
-		self.console_box.setFixedHeight(100)
-		grid_layout.addWidget(self.console_box, 6, 0, 1, 3)
+# 		self.console_box.setFixedHeight(100)
+		grid_layout.addWidget(self.console_box, 6, 3, 1, 5)
 
 		grid_layout.addWidget(address_label, 0, 3, 1, 1)
 		grid_layout.addWidget(self.address_edit, 0, 4, 1, 1)
