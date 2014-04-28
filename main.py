@@ -19,15 +19,8 @@ class MainWindow(QWidget):
 		QWidget.__init__(self)
 
 		self.initDB()
-
-		grid_layout = QGridLayout()
-		self.setLayout(grid_layout)
-
-		changed_files_table = QTableView()
-		grid_layout.addWidget(changed_files_table, 0, 0, 5, 1)
-		changed_files_model = QStandardItemModel()
-		changed_files_table.setModel(changed_files_model)
-
+		self.changed_files_model = QStandardItemModel()
+		
 		# get changed files
 		try:
 			r = git.Repo('.')
@@ -40,7 +33,17 @@ class MainWindow(QWidget):
 		self.changed_files = c.stats.files.keys()
 		for f in c.stats.files.keys():
 			print f
-			changed_files_model.appendRow([QStandardItem(f)])
+			self.changed_files_model.appendRow([QStandardItem(f)])
+
+		self.buildUI()
+
+	def buildUI(self):
+		grid_layout = QGridLayout()
+		self.setLayout(grid_layout)
+
+		changed_files_table = QTableView()
+		grid_layout.addWidget(changed_files_table, 0, 0, 5, 1)
+		changed_files_table.setModel(self.changed_files_model)
 
 		# ftp part UI
 		address_label = QLabel('Server Address')
