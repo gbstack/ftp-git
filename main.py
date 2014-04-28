@@ -4,7 +4,17 @@ import sys
 import git
 import ftplib
 import sqlite3
-import threading
+import os
+import inspect
+
+def getCurrentDirectory():
+    return os.path.dirname(getExecutablePath())
+
+def getExecutablePath():
+    if getattr(sys, 'frozen', False):
+        return sys.executable
+    else:
+        return os.path.abspath(inspect.getfile(inspect.currentframe()))
 
 class MainWindow(QWidget):
 	def initDB(self):
@@ -21,28 +31,18 @@ class MainWindow(QWidget):
 		self.initDB()
 		self.changed_files_model = QStandardItemModel()
 		
-		# get changed files
-		try:
-			r = git.Repo('.')
-		except git.exc.InvalidGitRepositoryError:
-			msg_box = QMessageBox()
-			msg_box.setText("Current directory is not a valid git repository")
-			msg_box.exec_()
-			exit()
-		c = r.head.commit
-		self.changed_files = c.stats.files.keys()
-		for f in c.stats.files.keys():
-			print f
-			self.changed_files_model.appendRow([QStandardItem(f)])
-
 		self.buildUI()
+		self.getChangedFiles('.')
 
 	def buildUI(self):
+		self.setFixedWidth(800)
+		self.setFixedHeight(350)
+		
 		grid_layout = QGridLayout()
 		self.setLayout(grid_layout)
 
 		changed_files_table = QTableView()
-		grid_layout.addWidget(changed_files_table, 0, 0, 5, 1)
+		grid_layout.addWidget(changed_files_table, 1, 0, 5, 3)
 		changed_files_table.setModel(self.changed_files_model)
 
 		# ftp part UI
@@ -59,19 +59,55 @@ class MainWindow(QWidget):
 		self.console_box.setFixedHeight(100)
 		grid_layout.addWidget(self.console_box, 6, 0, 1, 3)
 
-		grid_layout.addWidget(address_label, 0, 1, 1, 1)
-		grid_layout.addWidget(self.address_edit, 0, 2, 1, 1)
-		grid_layout.addWidget(username_label, 1, 1, 1, 1)
-		grid_layout.addWidget(self.username_edit, 1, 2, 1, 1)
-		grid_layout.addWidget(password_label, 2, 1, 1, 1)
-		grid_layout.addWidget(self.password_edit, 2, 2, 1, 1)
-		grid_layout.addWidget(upload_btn, 3, 1, 1, 1)
+		grid_layout.addWidget(address_label, 0, 3, 1, 1)
+		grid_layout.addWidget(self.address_edit, 0, 4, 1, 1)
+		grid_layout.addWidget(username_label, 1, 3, 1, 1)
+		grid_layout.addWidget(self.username_edit, 1, 4, 1, 1)
+		grid_layout.addWidget(password_label, 2, 3, 1, 1)
+		grid_layout.addWidget(self.password_edit, 2, 4, 1, 1)
+		grid_layout.addWidget(upload_btn, 3, 3, 1, 1)
+		
+		# repository path UI
+		dir_label = QLabel('Repository path')
+		grid_layout.addWidget(dir_label, 0,0,1,1)
+		self.dir_edit = QLineEdit()
+		self.dir_edit.setText(getCurrentDirectory())
+		grid_layout.addWidget(self.dir_edit, 0,1,1,1)
+		dir_btn = QPushButton('Choose')
+		dir_btn.clicked.connect(self.chooseRepositoryPathBtnClicked)
+		grid_layout.addWidget(dir_btn, 0,2,1,1)
 
 		ftp_credentials = self.getFtpCredentials()
 		if ftp_credentials:
 			self.address_edit.setText(ftp_credentials[1])
 			self.username_edit.setText(ftp_credentials[2])
 			self.password_edit.setText(ftp_credentials[3])
+
+	def getChangedFiles(self, repo_path):
+		# get changed files
+		try:
+			r = git.Repo(repo_path)
+			self.repo_path = repo_path
+			self.dir_edit.setText(repo_path)
+			self.changed_files_model.clear()
+		except git.exc.InvalidGitRepositoryError:
+			msg_box = QMessageBox()
+			msg_box.setText("Selected path is not a valid git repository")
+			msg_box.exec_()
+			return
+		c = r.head.commit
+		self.changed_files = map(lambda f:os.path.join(self.repo_path, f), c.stats.files.keys())
+		for f in c.stats.files.keys():
+			print f
+			self.changed_files_model.appendRow([QStandardItem(f)])
+
+	def chooseRepositoryPathBtnClicked(self):
+		file_dlg = QFileDialog(self)
+		file_dlg.setFileMode(QFileDialog.Directory)
+		if file_dlg.exec_():
+			files = file_dlg.selectedFiles()
+			print files
+			self.getChangedFiles(files[0])
 
 	def printTextToConsole(self, text):
 		print text
@@ -143,10 +179,9 @@ class UploadThread(QThread):
 
 		for filename in self.window.changed_files:
 			f = open(filename)
-			self.updateConsole.emit(ftp.storlines('STOR '+filename, f))
+			self.updateConsole.emit(ftp.storlines('STOR '+os.path.basename(filename), f))
 			#self.window.printTextToConsole(ftp.storlines('STOR '+filename, f))
 			f.close()
-		print 'a'
 
 app = QApplication(sys.argv)
 w = MainWindow()
