@@ -6,6 +6,7 @@ import ftplib
 import sqlite3
 import os
 import inspect
+import webbrowser
 
 def getCurrentDirectory():
     return os.path.dirname(getExecutablePath())
@@ -41,10 +42,10 @@ class MainWindow(QWidget):
 		grid_layout = QGridLayout()
 		self.setLayout(grid_layout)
 
+		# Changed files table
 		changed_files_table = QTableView()
 		self.changed_files_table = changed_files_table
 		changed_files_table.horizontalHeader().hide()
-		
 		grid_layout.addWidget(changed_files_table, 1, 0, 6, 3)
 		changed_files_table.setModel(self.changed_files_model)
 
@@ -62,8 +63,26 @@ class MainWindow(QWidget):
 		console_label = QLabel('Log')
 		grid_layout.addWidget(console_label, 5,3,1,1)
 		self.console_box = QTextEdit()
-# 		self.console_box.setFixedHeight(100)
+		# self.console_box.setFixedHeight(100)
 		grid_layout.addWidget(self.console_box, 6, 3, 1, 5)
+		
+		# build menu bar
+		menu_bar = QMenuBar()
+		grid_layout.addWidget(menu_bar, 7,0,1,7)
+		file_menu = menu_bar.addMenu('File')
+		exit_action = QAction('Exit', self)
+		exit_action.triggered.connect(exit)
+		file_menu.addAction(exit_action)
+
+		donate_action = QAction('Donate', self)
+		donate_action.triggered.connect(self.donateClicked)
+		menu_bar.addAction(donate_action)
+
+		help_menu = menu_bar.addMenu('Help')
+		report_action = QAction('Report a bug', self)
+		about_action = QAction('About', self)
+		help_menu.addAction(report_action)
+		help_menu.addAction(about_action)
 
 		grid_layout.addWidget(address_label, 0, 3, 1, 1)
 		grid_layout.addWidget(self.address_edit, 0, 4, 1, 1)
@@ -89,6 +108,9 @@ class MainWindow(QWidget):
 			self.username_edit.setText(ftp_credentials[2])
 			self.password_edit.setText(ftp_credentials[3])
 
+	def donateClicked(self):
+		webbrowser.open_new_tab('https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=FEBRQN6ZT5FKQ')
+
 	def getChangedFiles(self, repo_path):
 		# get changed files
 		try:
@@ -99,6 +121,7 @@ class MainWindow(QWidget):
 		except git.exc.InvalidGitRepositoryError:
 			msg_box = QMessageBox()
 			msg_box.setText("Selected path is not a valid git repository")
+			msg_box.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
 			msg_box.exec_()
 			return
 		c = r.head.commit
