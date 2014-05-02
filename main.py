@@ -1,3 +1,5 @@
+#coding: utf-8
+
 from PySide.QtCore import *
 from PySide.QtGui import *
 import sys
@@ -16,6 +18,19 @@ def getExecutablePath():
         return sys.executable
     else:
         return os.path.abspath(inspect.getfile(inspect.currentframe()))
+
+class AboutWindow(QWidget):
+	def __init__(self):
+		QWidget.__init__(self)
+		vbox = QVBoxLayout()
+		self.setLayout(vbox)
+
+		label = QLabel('<b style="font-size:30px;">Ftp-git</b>')
+		vbox.addWidget(label)
+		vbox.addWidget(QLabel('Copyright redino.net (gbstack08@gmail.com)'))
+		link_btn = QCommandLinkButton('redino.net')
+		link_btn.clicked.connect(exit)
+		vbox.addWidget(link_btn)
 
 class MainWindow(QWidget):
 	def initDB(self):
@@ -81,6 +96,7 @@ class MainWindow(QWidget):
 		help_menu = menu_bar.addMenu('Help')
 		report_action = QAction('Report a bug', self)
 		about_action = QAction('About', self)
+		about_action.triggered.connect(self.aboutClicked)
 		help_menu.addAction(report_action)
 		help_menu.addAction(about_action)
 
@@ -110,6 +126,9 @@ class MainWindow(QWidget):
 
 	def donateClicked(self):
 		webbrowser.open_new_tab('https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=FEBRQN6ZT5FKQ')
+	def aboutClicked(self):
+		self.about_window = AboutWindow()
+		self.about_window.show()
 
 	def getChangedFiles(self, repo_path):
 		# get changed files
