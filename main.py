@@ -19,20 +19,25 @@ def getExecutablePath():
     else:
         return os.path.abspath(inspect.getfile(inspect.currentframe()))
 
-class AboutWindow(QWidget):
+class GitFtpWindow(QWidget):
 	def __init__(self):
 		QWidget.__init__(self)
+		self.setWindowTitle('Ftp-Git')
+
+class AboutWindow(GitFtpWindow):
+	def __init__(self):
+		GitFtpWindow.__init__(self)
 		vbox = QVBoxLayout()
 		self.setLayout(vbox)
 
-		label = QLabel('<b style="font-size:30px;">Ftp-git</b>')
+		label = QLabel('<b style="font-size:30px;">Ftp-Git</b>')
 		vbox.addWidget(label)
 		vbox.addWidget(QLabel('Copyright redino.net (gbstack08@gmail.com)'))
 		link_btn = QCommandLinkButton('redino.net')
 		link_btn.clicked.connect(exit)
 		vbox.addWidget(link_btn)
 
-class MainWindow(QWidget):
+class MainWindow(GitFtpWindow):
 	def initDB(self):
 		self.db_conn = sqlite3.connect('settings.db')
 		cur = self.db_conn.cursor()
@@ -42,7 +47,7 @@ class MainWindow(QWidget):
 			print 'table already exists'
 
 	def __init__(self):
-		QWidget.__init__(self)
+		GitFtpWindow.__init__(self)
 
 		self.initDB()
 		self.changed_files_model = QStandardItemModel()
@@ -139,6 +144,7 @@ class MainWindow(QWidget):
 			self.changed_files_model.clear()
 		except git.exc.InvalidGitRepositoryError:
 			msg_box = QMessageBox()
+			msg_box.setWindowTitle('Error')
 			msg_box.setText("Selected path is not a valid git repository")
 			msg_box.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
 			msg_box.exec_()
