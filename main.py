@@ -12,7 +12,7 @@ import webbrowser
 import urllib2
 
 current_version = '1.0'
-auto_update_server = 'http://localhost'
+auto_update_server = 'http://redino.net'
 
 def getCurrentDirectory():
     return os.path.dirname(getExecutablePath())
@@ -45,7 +45,7 @@ class AboutWindow(GitFtpWindow):
 		vbox.addWidget(label)
 		vbox.addWidget(QLabel('Copyright redino.net (gbstack08@gmail.com)'))
 		link_btn = QCommandLinkButton('redino.net')
-		link_btn.clicked.connect(exit)
+		link_btn.clicked.connect(sys.exit)
 		vbox.addWidget(link_btn)
 
 class MainWindow(GitFtpWindow):
@@ -112,7 +112,7 @@ class MainWindow(GitFtpWindow):
 		grid_layout.addWidget(menu_bar, 0,0,1,7)
 		file_menu = menu_bar.addMenu('File')
 		exit_action = QAction('Exit', self)
-		exit_action.triggered.connect(exit)
+		exit_action.triggered.connect(sys.exit)
 		file_menu.addAction(exit_action)
 
 		donate_action = QAction('Donate', self)
