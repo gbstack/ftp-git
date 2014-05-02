@@ -9,6 +9,10 @@ import sqlite3
 import os
 import inspect
 import webbrowser
+import urllib2
+
+current_version = '1.0'
+auto_update_server = 'http://localhost'
 
 def getCurrentDirectory():
     return os.path.dirname(getExecutablePath())
@@ -18,6 +22,13 @@ def getExecutablePath():
         return sys.executable
     else:
         return os.path.abspath(inspect.getfile(inspect.currentframe()))
+
+def getLatestVersion():
+	r = urllib2.urlopen('{0}/updates/get_latest_version.php?app_name=ftp-git'.format(auto_update_server))
+	return r.read()
+def isNewVersionAvailable():
+	latest_version = getLatestVersion()
+	return latest_version > current_version
 
 class GitFtpWindow(QWidget):
 	def __init__(self):
@@ -54,6 +65,15 @@ class MainWindow(GitFtpWindow):
 		
 		self.buildUI()
 		self.getChangedFiles('.')
+
+		if isNewVersionAvailable():
+			msg_box = QMessageBox()
+			msg_box.setStandardButtons(QMessageBox.Yes|QMessageBox.No)
+			msg_box.setWindowTitle('Ftp-Git')
+			msg_box.setText('New version of Ftp-Git is available. Do you want to download the new version?')
+			ret = msg_box.exec_()
+			if ret == QMessageBox.Yes:
+				webbrowser.open_new_tab('http://redino.net/ftp-git')
 
 	def buildUI(self):
 		self.setFixedWidth(800)
