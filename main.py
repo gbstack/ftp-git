@@ -66,6 +66,7 @@ class MainWindow(GitFtpWindow):
 		self.buildUI()
 		self.getChangedFiles('.')
 
+		# check new version
 		if isNewVersionAvailable():
 			msg_box = QMessageBox()
 			msg_box.setStandardButtons(QMessageBox.Yes|QMessageBox.No)
@@ -86,7 +87,7 @@ class MainWindow(GitFtpWindow):
 		changed_files_table = QTableView()
 		self.changed_files_table = changed_files_table
 		changed_files_table.horizontalHeader().hide()
-		grid_layout.addWidget(changed_files_table, 1, 0, 6, 3)
+		grid_layout.addWidget(changed_files_table, 2, 0, 6, 3)
 		changed_files_table.setModel(self.changed_files_model)
 
 		# ftp part UI
@@ -108,7 +109,7 @@ class MainWindow(GitFtpWindow):
 		
 		# build menu bar
 		menu_bar = QMenuBar()
-		grid_layout.addWidget(menu_bar, 7,0,1,7)
+		grid_layout.addWidget(menu_bar, 0,0,1,7)
 		file_menu = menu_bar.addMenu('File')
 		exit_action = QAction('Exit', self)
 		exit_action.triggered.connect(exit)
@@ -125,23 +126,23 @@ class MainWindow(GitFtpWindow):
 		help_menu.addAction(report_action)
 		help_menu.addAction(about_action)
 
-		grid_layout.addWidget(address_label, 0, 3, 1, 1)
-		grid_layout.addWidget(self.address_edit, 0, 4, 1, 1)
-		grid_layout.addWidget(username_label, 1, 3, 1, 1)
-		grid_layout.addWidget(self.username_edit, 1, 4, 1, 1)
-		grid_layout.addWidget(password_label, 2, 3, 1, 1)
-		grid_layout.addWidget(self.password_edit, 2, 4, 1, 1)
-		grid_layout.addWidget(upload_btn, 3, 3, 1, 1)
+		grid_layout.addWidget(address_label, 1, 3, 1, 1)
+		grid_layout.addWidget(self.address_edit, 1, 4, 1, 1)
+		grid_layout.addWidget(username_label, 2, 3, 1, 1)
+		grid_layout.addWidget(self.username_edit, 2, 4, 1, 1)
+		grid_layout.addWidget(password_label, 3, 3, 1, 1)
+		grid_layout.addWidget(self.password_edit, 3, 4, 1, 1)
+		grid_layout.addWidget(upload_btn, 4, 3, 1, 1)
 		
 		# repository path UI
 		dir_label = QLabel('Repository path')
-		grid_layout.addWidget(dir_label, 0,0,1,1)
+		grid_layout.addWidget(dir_label, 1,0,1,1)
 		self.dir_edit = QLineEdit()
 		self.dir_edit.setText(getCurrentDirectory())
-		grid_layout.addWidget(self.dir_edit, 0,1,1,1)
+		grid_layout.addWidget(self.dir_edit, 1,1,1,1)
 		dir_btn = QPushButton('Choose')
 		dir_btn.clicked.connect(self.chooseRepositoryPathBtnClicked)
-		grid_layout.addWidget(dir_btn, 0,2,1,1)
+		grid_layout.addWidget(dir_btn, 1,2,1,1)
 
 		ftp_credentials = self.getFtpCredentials()
 		if ftp_credentials:
