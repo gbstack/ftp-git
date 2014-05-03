@@ -45,8 +45,11 @@ class AboutWindow(GitFtpWindow):
 		vbox.addWidget(label)
 		vbox.addWidget(QLabel('Copyright redino.net (gbstack08@gmail.com)'))
 		link_btn = QCommandLinkButton('redino.net')
-		link_btn.clicked.connect(sys.exit)
+		link_btn.clicked.connect(self.websiteLinkClicked)
 		vbox.addWidget(link_btn)
+
+	def websiteLinkClicked(self):
+		webbrowser.open_new_tab('http://redino.net')
 
 class MainWindow(GitFtpWindow):
 	def initDB(self):
@@ -123,6 +126,7 @@ class MainWindow(GitFtpWindow):
 		report_action = QAction('Report a bug', self)
 		about_action = QAction('About', self)
 		about_action.triggered.connect(self.aboutClicked)
+		report_action.triggered.connect(self.reportClicked)
 		help_menu.addAction(report_action)
 		help_menu.addAction(about_action)
 
@@ -155,6 +159,8 @@ class MainWindow(GitFtpWindow):
 	def aboutClicked(self):
 		self.about_window = AboutWindow()
 		self.about_window.show()
+	def reportClicked(self):
+		webbrowser.open_new_tab('http://redino.net/forum')
 
 	def getChangedFiles(self, repo_path):
 		# get changed files
@@ -167,7 +173,6 @@ class MainWindow(GitFtpWindow):
 			msg_box = QMessageBox()
 			msg_box.setWindowTitle('Error')
 			msg_box.setText("Selected path is not a valid git repository")
-			msg_box.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
 			msg_box.exec_()
 			return
 		c = r.head.commit
