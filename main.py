@@ -101,6 +101,8 @@ class MainWindow(GitFtpWindow):
 		password_label = QLabel('Password')
 		self.password_edit = QLineEdit()
 		upload_btn = QPushButton('Upload')
+		base_dir_label = QLabel('Base Directory')
+		self.base_dir_edit = QLineEdit()
 		upload_btn.clicked.connect(self.uploadBtnClicked)
 
 		# log console
@@ -136,7 +138,9 @@ class MainWindow(GitFtpWindow):
 		grid_layout.addWidget(self.username_edit, 2, 4, 1, 1)
 		grid_layout.addWidget(password_label, 3, 3, 1, 1)
 		grid_layout.addWidget(self.password_edit, 3, 4, 1, 1)
-		grid_layout.addWidget(upload_btn, 4, 3, 1, 1)
+		grid_layout.addWidget(base_dir_label, 4, 3, 1, 1)
+		grid_layout.addWidget(self.base_dir_edit, 4, 4, 1, 1)
+		grid_layout.addWidget(upload_btn, 5, 3, 1, 1)
 		
 		# repository path UI
 		dir_label = QLabel('Repository path')
@@ -245,7 +249,7 @@ class UploadThread(QThread):
 		server_address = self.window.address_edit.text()
 		username = self.window.username_edit.text()
 		password = self.window.password_edit.text()
-		
+		base_dir = self.window.base_dir_edit.text()
 
 		ftp = ftplib.FTP()
 		try:
@@ -269,7 +273,7 @@ class UploadThread(QThread):
 
 		for filename in self.window.changed_files:
 			f = open(filename)
-			self.updateConsole.emit(ftp.storlines('STOR '+os.path.basename(filename), f))
+			self.updateConsole.emit(ftp.storlines('STOR '+os.path.join(base_dir, filename), f))
 			#self.window.printTextToConsole(ftp.storlines('STOR '+filename, f))
 			f.close()
 
