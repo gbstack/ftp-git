@@ -24,7 +24,11 @@ def getExecutablePath():
         return os.path.abspath(inspect.getfile(inspect.currentframe()))
 
 def getLatestVersion():
-	r = urllib2.urlopen('{0}/updates/get_latest_version.php?app_name=ftp-git'.format(auto_update_server))
+	try:
+		r = urllib2.urlopen('{0}/updates/get_latest_version.php?app_name=ftp-git'.format(auto_update_server))
+	except urllib2.URLError:
+		# use current version if updating server is not available
+		return 0
 	return r.read()
 def isNewVersionAvailable():
 	latest_version = getLatestVersion()
