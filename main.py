@@ -104,6 +104,7 @@ class MainWindow(GitFtpWindow):
 		self.username_edit = QLineEdit()
 		password_label = QLabel('Password')
 		self.password_edit = QLineEdit()
+		self.password_edit.setEchoMode(QLineEdit.PasswordEchoOnEdit)
 		upload_btn = QPushButton('Upload')
 		base_dir_label = QLabel('Base Directory')
 		self.base_dir_edit = QLineEdit()
