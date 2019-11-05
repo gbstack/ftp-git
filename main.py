@@ -1,7 +1,7 @@
 #coding: utf-8
 
-from PySide.QtCore import *
-from PySide.QtGui import *
+from PySide2.QtCore import *
+from PySide2.QtGui import *
 import sys
 import git
 import ftplib
@@ -10,6 +10,11 @@ import os
 import inspect
 import webbrowser
 import urllib.request, urllib.error, urllib.parse
+
+from PySide2.QtWidgets import QVBoxLayout, QWidget, QCommandLinkButton, QLabel, QMessageBox, QGridLayout, QTableView, \
+	QLineEdit, QPushButton, QTextEdit, QMenuBar, QAction, QFileDialog, QApplication
+
+import core
 
 current_version = '1.0'
 auto_update_server = 'http://redino.net'
