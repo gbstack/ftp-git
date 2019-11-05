@@ -9,7 +9,7 @@ import sqlite3
 import os
 import inspect
 import webbrowser
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 current_version = '1.0'
 auto_update_server = 'http://redino.net'
@@ -25,8 +25,8 @@ def getExecutablePath():
 
 def getLatestVersion():
 	try:
-		r = urllib2.urlopen('{0}/updates/get_latest_version.php?app_name=ftp-git'.format(auto_update_server))
-	except urllib2.URLError:
+		r = urllib.request.urlopen('{0}/updates/get_latest_version.php?app_name=ftp-git'.format(auto_update_server))
+	except urllib.error.URLError:
 		# use current version if updating server is not available
 		return 0
 	return r.read()
@@ -62,7 +62,7 @@ class MainWindow(GitFtpWindow):
 		try:
 			cur.execute('create table ftp_servers(id integer primary key autoincrement, address varchar(255), username varchar(255), password varchar(255));')
 		except sqlite3.OperationalError:
-			print 'table already exists'
+			print('table already exists')
 
 	def __init__(self):
 		GitFtpWindow.__init__(self)
@@ -185,9 +185,9 @@ class MainWindow(GitFtpWindow):
 			msg_box.exec_()
 			return
 		c = r.head.commit
-		self.changed_files = map(lambda f:os.path.join(self.repo_path, f), c.stats.files.keys())
-		for f in c.stats.files.keys():
-			print f
+		self.changed_files = [os.path.join(self.repo_path, f) for f in list(c.stats.files.keys())]
+		for f in list(c.stats.files.keys()):
+			print(f)
 			self.changed_files_model.appendRow([QStandardItem(f)])
 		self.changed_files_table.setColumnWidth(0, self.changed_files_table.width())
 
@@ -196,11 +196,11 @@ class MainWindow(GitFtpWindow):
 		file_dlg.setFileMode(QFileDialog.Directory)
 		if file_dlg.exec_():
 			files = file_dlg.selectedFiles()
-			print files
+			print(files)
 			self.getChangedFiles(files[0])
 
 	def printTextToConsole(self, text):
-		print text
+		print(text)
 		original_text = self.console_box.toPlainText()
 		self.console_box.setText(original_text+text+'\n')
 	def displayError(self, text):
@@ -248,7 +248,7 @@ class UploadThread(QThread):
 	def __init__(self, window):
 		QThread.__init__(self)
 		self.window = window
-		print self.window
+		print(self.window)
 
 	def run(self):
 		server_address = self.window.address_edit.text()
@@ -258,9 +258,9 @@ class UploadThread(QThread):
 
 		ftp = ftplib.FTP()
 		try:
-			print ftp.connect(server_address)
-		except Exception, e:
-			print e
+			print(ftp.connect(server_address))
+		except Exception as e:
+			print(e)
 			self.updateConsoleError.emit('Cannot connect to host')
 			#self.window.printTextToConsole('Cannot connect to host')
 			return
@@ -270,8 +270,8 @@ class UploadThread(QThread):
 			login_status = ftp.login(username, password)
 			self.updateConsole.emit(login_status)
 			#self.window.printTextToConsole(login_status)
-		except Exception, e:
-			print e
+		except Exception as e:
+			print(e)
 			self.updateConsoleError.emit('login failed')
 			return
 			#self.window.printTextToConsole('login failed')
