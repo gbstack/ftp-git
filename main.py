@@ -56,18 +56,18 @@ class AboutWindow(GitFtpWindow):
 		webbrowser.open_new_tab('http://redino.net')
 
 class MainWindow(GitFtpWindow):
-	def initDB(self):
-		self.db_conn = sqlite3.connect('settings.db')
-		cur = self.db_conn.cursor()
-		try:
-			cur.execute('create table ftp_servers(id integer primary key autoincrement, address varchar(255), username varchar(255), password varchar(255));')
-		except sqlite3.OperationalError:
-			print('table already exists')
+	def notifyError(self, text, title='Error'):
+		msg_box = QMessageBox()
+		msg_box.setWindowTitle('Error')
+		msg_box.setText("Selected path is not a valid git repository")
+		msg_box.exec_()
+
+	app = core.Application()
 
 	def __init__(self):
 		GitFtpWindow.__init__(self)
 
-		self.initDB()
+		self.app.initDB()
 		self.changed_files_model = QStandardItemModel()
 		
 		self.buildUI()
@@ -157,7 +157,7 @@ class MainWindow(GitFtpWindow):
 		dir_btn.clicked.connect(self.chooseRepositoryPathBtnClicked)
 		grid_layout.addWidget(dir_btn, 1,2,1,1)
 
-		ftp_credentials = self.getFtpCredentials()
+		ftp_credentials = self.app.getFtpCredentials()
 		if ftp_credentials:
 			self.address_edit.setText(ftp_credentials[1])
 			self.username_edit.setText(ftp_credentials[2])
@@ -209,14 +209,7 @@ class MainWindow(GitFtpWindow):
 		msg_box.setText(text)
 		msg_box.exec_()
 
-	def getFtpCredentials(self):
-		cur = self.db_conn.cursor()
-		cur.execute('select * from ftp_servers')
-		server = cur.fetchone()
-		if server:
-			return server
-		else:
-			return None
+
 
 	def updateFtpCredentials(self, server_address, username, password):
 		cur = self.db_conn.cursor()
