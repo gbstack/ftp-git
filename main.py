@@ -33,11 +33,11 @@ def getLatestVersion():
 		r = urllib.request.urlopen('{0}/updates/get_latest_version.php?app_name=ftp-git'.format(auto_update_server))
 	except urllib.error.URLError:
 		# use current version if updating server is not available
-		return 0
+		return '0'
 	return r.read()
 def isNewVersionAvailable():
 	latest_version = getLatestVersion()
-	return latest_version > current_version
+	return latest_version.decode('utf8') > current_version
 
 class GitFtpWindow(QWidget):
 	def __init__(self):
